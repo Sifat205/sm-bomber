@@ -23,8 +23,8 @@ SM_ART = f"""
   ____) | |  | |
  |_____/|_|  |_|
         
-        {Colors.YELLOW}=== SM CORPORATE 🍁 SMS Bomber ==={Colors.RESET}
-        Coded by: SM CORPORATE Team
+        {Colors.YELLOW}=== SM CORPORATE 🍁 SM Bomber ==={Colors.RESET}
+        Coded by: SM 🍁 
         For Educational Use Only!
 """
 
