@@ -18,17 +18,17 @@ SM_ART = f"""
 {Colors.CYAN}
 
 
-                                 _____ __  __ 
-                                / ____|  \/  |
-                               | (___ | \✨/ |
-                                \___ \| |\/| |
-                                ____) | |  | |
-                               |_____/|_|  |_|
+                          _____ __  __ 
+                        / ____|  \/  |
+                       | (___ | \✨/ |
+                        \___ \| |\/| |
+                        ____) | |  | |
+                       |_____/|_|  |_|
         
         
-          {Colors.YELLOW}=== SM CORPORATE 🍁 SM Bomber ==={Colors.RESET}
-          Coded by: SM 🍁 
-          For Educational Use Only!
+                 {Colors.YELLOW}=== SM CORPORATE 🍁 SM Bomber ==={Colors.RESET}
+                 Coded by: SM 🍁 
+                 For Educational Use Only!
 """
 
 # All APIs (including Bangladeshi and Pakistani services)
