@@ -21,3 +21,4 @@ A Python-based SMS Bomber tool designed to send OTP requests to various APIs. Th
    ```bash
    pkg update && pkg upgrade
    pkg install python git
+   git clone https://github.com/Sifat205/sm-bomber.git
