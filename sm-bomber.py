@@ -53,13 +53,15 @@ def validate_phone(phone):
 def send_request(phone, request_type):
     url = API["url"]
     params = {key: value.replace("{number}", phone).replace("{type}", request_type) for key, value in API["params"].items()}
-    headers = {"User-Agent": remit(random.choice(USER_AGENTS))}
+    headers = {"User-Agent": random.choice(USER_AGENTS)}
 
     try:
+        print(f"{Colors.YELLOW}Sending {request_type.upper()} request to {phone} with URL: {url} and params: {params}{Colors.RESET}")
         response = requests.get(url, params=params, headers=headers, timeout=10)
-        print(f"{Colors.YELLOW}Debug: Raw API response for {request_type.upper()} to {phone}: {response.text}{Colors.RESET}")
+        print(f"{Colors.YELLOW}Debug: Raw API response for {request_type.upper()} to {phone}: {response.text} (Status: {response.status_code}){Colors.RESET}")
         return {"success": True, "status": f"Success (HTTP {response.status_code})"}
     except requests.RequestException as e:
+        print(f"{Colors.RED}Error in {request_type.upper()} request to {phone}: {str(e)}{Colors.RESET}")
         return {"success": False, "status": f"Unsuccessful: {str(e)}"}
 
 def main():
@@ -118,7 +120,7 @@ def main():
 
     request_counter = 0
     for phone in phone_numbers:
-        # Only include request types with count > 0
+        # Create request list based on non-zero counts
         request_list = []
         if sms_count > 0:
             request_list.extend([("sms", API) for _ in range(sms_count)])
