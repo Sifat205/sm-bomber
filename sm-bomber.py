@@ -132,7 +132,7 @@ def main():
 
     # Process requests for each number
     for phone in phone_numbers:
-        print(f"\n{Colors.CYAN}Processing {request_type.upper()} for {phone}...{Colors.RESET}")
+        print(f"\n{Colors.CYAN}Bombing number: {phone}{Colors.RESET}")
         send_request(phone, request_type, count)
 
     print(f"\n{Colors.GREEN}Operation completed!{Colors.RESET}")
